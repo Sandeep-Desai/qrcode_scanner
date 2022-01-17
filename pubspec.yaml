@@ -36,6 +36,8 @@ dependencies:
   cupertino_icons: ^1.0.2
   barcode_scan2: ^4.2.0
   gsheets: ^0.3.2
+  intl: any
+  cron: ^0.4.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

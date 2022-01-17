@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:gsheets/gsheets.dart';
 import 'package:qrcode_scanner/models/trafficGS.dart';
 import 'package:qrcode_scanner/models/qr.dart';
@@ -56,9 +57,18 @@ class googleSheetsAPI
     {
       _userSheet!.values.map.appendRows(rowList);
     }
-    static Future updateCell(List<Map<String,dynamic>> rowlist) async
+     static Future insertTraffic(List<Map<String,dynamic>> rowList) async
     {
-      _trafficSheet!.values.map.appendRows(rowlist);
+      _trafficSheet!.values.map.appendRows(rowList);
+    }
+    static Future<bool> updateCell({
+      required int id,
+      required String key,
+      required dynamic value
+    })async
+    {
+      if(_trafficSheet==Null) return false;
+      return _trafficSheet!.values.insertValueByKeys(value, columnKey: key, rowKey: id);
     }
     static Future <bool>isEqual (String qrCode,int row_no,int col_no) async
     {
@@ -72,6 +82,32 @@ class googleSheetsAPI
       {
         return false;
       }
+    }
+    static Future <bool>isNotValid (DateTime now,int row_no,int col_no) async
+    {
+      int cur_hour=now.hour;
+      int exit_hour= int.parse((await _trafficSheet!.values.value(column: col_no, row: row_no)).substring(0,2));
+      int cur_min=now.minute;
+      int exit_min=int.parse((await _trafficSheet!.values.value(column: col_no, row: row_no)).substring(3,5));
+      // int cur_min=now.second;
+      // int exit_min=int.parse((await _trafficSheet!.values.value(column: col_no, row: row_no)).substring(3,5));
+      if(cur_hour>exit_hour)
+      {
+        return false;
+      }
+      else if(cur_hour==exit_hour&&cur_min>exit_min)
+      {
+        return false;
+      }
+      else
+      {
+        return true;
+      }
+      
+      // if(int.parse(now.hour.toString())>int.parse(await _trafficSheet!.values.value(column: col_no, row: row_no)).toString().substring(0,2))
+      // {
+
+      // }
     }
 }
 

@@ -1,7 +1,7 @@
 // import 'dart:js';
-
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-
+import 'package:cron/cron.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
 // import 'package:qrcode_scanner/api/sheets/googlesheetAPI.dart';
 import 'package:qrcode_scanner/api/sheets/googlesheetAPI.dart';
@@ -15,7 +15,21 @@ Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // counter=1;
   await googleSheetsAPI.init();
+  var cron= new Cron();
+  cron.schedule(new Schedule.parse('*/1 * * * *'), () async {
+    for(int i=2;i<=counter+1;i++)
+    {
+      dynamic currentTime = DateFormat.jm().format(DateTime.now());
+      DateTime now = DateTime.now();
+      if(await googleSheetsAPI.isNotValid(now,i,3))
+      {
+         counter--;
+      }
+
+    }
+  });
   runApp(const MyApp());
+
 }
 
 createAlertDialogue(BuildContext context)
@@ -39,10 +53,7 @@ Future _scanQR(BuildContext context) async
         sheetfeilds.srNo:counter,
         sheetfeilds.qrResult:qrResult.rawContent.toString()
       };
-      final trafficMess=
-      {
-        trafficfiedls.jaiswalOld:counter.toString()
-      };
+      
       // print(qrResult.rawContent.toString());
       
       for(int i=2;i<=counter+1;i++)
@@ -57,9 +68,20 @@ Future _scanQR(BuildContext context) async
 
       if(isvalid)
       {
+        dynamic currentTime = DateFormat.jm().format(DateTime.now());
+        DateTime now = DateTime.now();
+        var exittime=now.add(const Duration(days:0,hours: 0,minutes: 30,seconds: 0));
+        final trafficMess=
+      {
+        trafficfiedls.jaiswalOld:counter.toString(),
+        trafficfiedls.entryTime:(now.hour.toString()+":"+now.minute.toString()+":"+now.second.toString()),
+        trafficfiedls.exitTime:(exittime.hour.toString()+":"+exittime.minute.toString()+":"+exittime.second.toString())
+      };
+        
         await googleSheetsAPI.insert([qrCode]);
-        await googleSheetsAPI.updateCell([trafficMess]);
+        await googleSheetsAPI.insertTraffic([trafficMess]);
         counter++;
+        
         
       }
       else
@@ -102,13 +124,16 @@ class _MyAppState extends State<MyApp> {
           title: Text("QR Code Scanner"),
         ),
         body: Center(
-          child: Text("Hey There!",style:TextStyle(fontSize: 30,fontWeight: FontWeight.bold))
+          
+          child: Text("Hey There!",style:TextStyle(fontSize: 30,fontWeight: FontWeight.bold)),
+          
           ),
           floatingActionButton: Builder(
             builder: (context) {
               return FloatingActionButton.extended(icon:Icon(Icons.qr_code),label: Text("Scan"),onPressed:()=> _scanQR(context),);
             }
           ),floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          
       ),
     );
   }
