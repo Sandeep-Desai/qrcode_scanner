@@ -1,18 +1,32 @@
 import 'package:flutter/material.dart';
+
 import 'package:barcode_scan2/barcode_scan2.dart';
-void main() {
+// import 'package:qrcode_scanner/api/sheets/googlesheetAPI.dart';
+import 'package:qrcode_scanner/api/sheets/googlesheetAPI.dart';
+import 'package:qrcode_scanner/models/qr.dart';
+Future main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await googleSheetsAPI.init();
   runApp(const MyApp());
 }
+
+
 Future _scanQR() async
   {
     
     try
     {
       var qrResult=await BarcodeScanner.scan();
+      final qrCode={
+        sheetfeilds.srNo:1,
+        sheetfeilds.qrResult:qrResult
+      };
+    
     }
     catch(e)
     {
-      print("error detected");
+      print(e);
     }
      
     
@@ -47,3 +61,4 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
+
