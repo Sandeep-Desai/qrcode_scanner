@@ -18,10 +18,15 @@ Future _scanQR() async
     try
     {
       var qrResult=await BarcodeScanner.scan();
-      final qrCode={
+      if(qrResult!=Null)
+      {
+        final qrCode={
         sheetfeilds.srNo:1,
         sheetfeilds.qrResult:qrResult
       };
+      await googleSheetsAPI.insert([qrCode]);
+      }
+      
     
     }
     catch(e)

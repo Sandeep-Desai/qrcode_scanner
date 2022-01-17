@@ -48,4 +48,9 @@ class googleSheetsAPI
        return  spreadsheet.worksheetByTitle(title)!;
      }
     }
+    static Future insert(List<Map<String,dynamic>> rowList) async
+    {
+      _userSheet!.values.map.appendRows(rowList);
+    }
 }
+
