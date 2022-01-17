@@ -1,4 +1,5 @@
 import 'package:gsheets/gsheets.dart';
+import 'package:qrcode_scanner/models/trafficGS.dart';
 import 'package:qrcode_scanner/models/qr.dart';
 class googleSheetsAPI
 {
@@ -19,14 +20,17 @@ class googleSheetsAPI
   static final _googleSheetID="1sHF_3KWYFCSgioYowDmqaFDMidjt0Y24g1yBFYy97Tc"; 
   static final _gSheets=GSheets(_credentials);
   static Worksheet? _userSheet;
+  static Worksheet? _trafficSheet;
   static Future init() async
   {
     try {
       final googleSheet= await _gSheets.spreadsheet(_googleSheetID);
       _userSheet=await _getWorkSheet(googleSheet,title:"QRCode");
-      
+      _trafficSheet=await _getWorkSheet(googleSheet, title: "TrafficInMess");
       final first_row=sheetfeilds.getfields();
+      final traffic_first_row=trafficfiedls.getfields();
       _userSheet!.values.insertRow(1, first_row);
+      _trafficSheet!.values.insertRow(1, traffic_first_row);
     } catch(e) {
       print(e);
     }
@@ -51,6 +55,23 @@ class googleSheetsAPI
     static Future insert(List<Map<String,dynamic>> rowList) async
     {
       _userSheet!.values.map.appendRows(rowList);
+    }
+    static Future updateCell(List<Map<String,dynamic>> rowlist) async
+    {
+      _trafficSheet!.values.map.appendRows(rowlist);
+    }
+    static Future <bool>isEqual (String qrCode,int row_no,int col_no) async
+    {
+      print(await _userSheet!.values.value(column: col_no, row: row_no));
+      if(await _userSheet!.values.value(column: col_no, row: row_no)==qrCode)
+      {
+        
+        return true;
+      }
+      else
+      {
+        return false;
+      }
     }
 }
 
