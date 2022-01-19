@@ -8,6 +8,7 @@ import 'package:qrcode_scanner/api/sheets/googlesheetAPI.dart';
 import 'package:qrcode_scanner/models/qr.dart';
 import 'package:qrcode_scanner/models/trafficGS.dart';
 int counter =1;
+int people_no=1;
 bool isvalid=true;
 int row_no=0;
 int col_no=2;
@@ -23,7 +24,7 @@ Future main() async {
       DateTime now = DateTime.now();
       if(await googleSheetsAPI.isNotValid(now,i,3))
       {
-         counter--;
+        people_no--;
       }
 
     }
@@ -70,17 +71,25 @@ Future _scanQR(BuildContext context) async
       {
         dynamic currentTime = DateFormat.jm().format(DateTime.now());
         DateTime now = DateTime.now();
+
         var exittime=now.add(const Duration(days:0,hours: 0,minutes: 30,seconds: 0));
+        String exhour=exittime.hour.toString();
+        if(int.parse(exhour)<10)
+        {
+          exhour=exhour+"0";
+        }
         final trafficMess=
       {
         trafficfiedls.jaiswalOld:counter.toString(),
         trafficfiedls.entryTime:(now.hour.toString()+":"+now.minute.toString()+":"+now.second.toString()),
-        trafficfiedls.exitTime:(exittime.hour.toString()+":"+exittime.minute.toString()+":"+exittime.second.toString())
+        trafficfiedls.exitTime:(exhour.toString()+":"+exittime.minute.toString()+":"+exittime.second.toString()),
+        trafficfiedls.valid:"1"
       };
         
         await googleSheetsAPI.insert([qrCode]);
         await googleSheetsAPI.insertTraffic([trafficMess]);
         counter++;
+        people_no++;
         
         
       }

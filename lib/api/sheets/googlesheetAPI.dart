@@ -25,9 +25,12 @@ class googleSheetsAPI
   static Future init() async
   {
     try {
+      
       final googleSheet= await _gSheets.spreadsheet(_googleSheetID);
       _userSheet=await _getWorkSheet(googleSheet,title:"QRCode");
       _trafficSheet=await _getWorkSheet(googleSheet, title: "TrafficInMess");
+      await _userSheet!.clear();
+      await _trafficSheet!.clear();
       final first_row=sheetfeilds.getfields();
       final traffic_first_row=trafficfiedls.getfields();
       _userSheet!.values.insertRow(1, first_row);
@@ -85,24 +88,37 @@ class googleSheetsAPI
     }
     static Future <bool>isNotValid (DateTime now,int row_no,int col_no) async
     {
-      int cur_hour=now.hour;
-      int exit_hour= int.parse((await _trafficSheet!.values.value(column: col_no, row: row_no)).substring(0,2));
+      String valid=(await _trafficSheet!.values.value(column: 4, row: row_no)) ;
+      if(valid=="1")
+      {
+        int cur_hour=now.hour;
+
+      int exit_hour= int.parse((await _trafficSheet!.values.value(column: 3, row: row_no)).substring(0,2));
       int cur_min=now.minute;
-      int exit_min=int.parse((await _trafficSheet!.values.value(column: col_no, row: row_no)).substring(3,5));
+      int exit_min=int.parse((await _trafficSheet!.values.value(column: 3, row: row_no)).substring(3,5));
       // int cur_min=now.second;
       // int exit_min=int.parse((await _trafficSheet!.values.value(column: col_no, row: row_no)).substring(3,5));
       if(cur_hour>exit_hour)
       {
-        return false;
+        _trafficSheet!.values.insertValueByKeys("0", columnKey: "Valid", rowKey: row_no);
+        return true;
       }
       else if(cur_hour==exit_hour&&cur_min>exit_min)
       {
-        return false;
+        _trafficSheet!.values.insertValueByKeys("0", columnKey: "Valid", rowKey: row_no);
+        return true;
       }
       else
       {
-        return true;
+        return false;
       }
+      }
+      else
+      {
+         return false;
+      }
+      
+      
       
       // if(int.parse(now.hour.toString())>int.parse(await _trafficSheet!.values.value(column: col_no, row: row_no)).toString().substring(0,2))
       // {
