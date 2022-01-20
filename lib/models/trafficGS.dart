@@ -1,8 +1,8 @@
 class trafficfiedls
 {
-  static final String jaiswalOld="Jaiswal Old";
-  static final String entryTime="Entry Time";
-  static final String exitTime="Exit Time";
-  static final String valid="Valid";
-  static List<String> getfields()=>[jaiswalOld,entryTime,exitTime,valid];
+  // static final String jaiswalOld="Jaiswal Old";
+
+  static final String count="Count";
+  static final String id="id";
+  static List<dynamic> getfields()=>[id,count];
 }

@@ -1,4 +1,5 @@
-import 'package:flutter/cupertino.dart';
+// import 'package:flutter/cupertino.dart';
+import 'package:intl/intl.dart';
 import 'package:gsheets/gsheets.dart';
 import 'package:qrcode_scanner/models/trafficGS.dart';
 import 'package:qrcode_scanner/models/qr.dart';
@@ -78,7 +79,6 @@ class googleSheetsAPI
       print(await _userSheet!.values.value(column: col_no, row: row_no));
       if(await _userSheet!.values.value(column: col_no, row: row_no)==qrCode)
       {
-        
         return true;
       }
       else
@@ -91,23 +91,31 @@ class googleSheetsAPI
       String valid=(await _trafficSheet!.values.value(column: 4, row: row_no)) ;
       if(valid=="1")
       {
-        int cur_hour=now.hour;
+        // int cur_hour=now.hour;
 
-      int exit_hour= int.parse((await _trafficSheet!.values.value(column: 3, row: row_no)).substring(0,2));
-      int cur_min=now.minute;
-      int exit_min=int.parse((await _trafficSheet!.values.value(column: 3, row: row_no)).substring(3,5));
+      // int exit_hour= int.parse((await _trafficSheet!.values.value(column: 3, row: row_no)).substring(0,2));
+      // int exit_hour=21;
+      // int cur_min=now.minute;
+      // int exit_min=int.parse((await _trafficSheet!.values.value(column: 3, row: row_no)).substring(3,5));
+      // int exit_min=50;
+      // print(await (_trafficSheet!.values.value(column: 3, row: row_no)).toString().substring(0,2));
+      // print(await (_trafficSheet!.values.value(column: 3, row: row_no)).toString().substring(3,5));
+      // print(exit_hour);
+      // print(cur_hour);
+      // print(exit_min);
+      // print(cur_min);
+      DateTime exit_time_=now;
+      // print(await _trafficSheet!.values.value(column: 3, row: 2));
+      // print(typedef Type Name(await _trafficSheet!.values.value(column:3,row:2)));
+      // print(exit_time_.hour.toString()+","+exit_time_.minute.toString());
       // int cur_min=now.second;
       // int exit_min=int.parse((await _trafficSheet!.values.value(column: col_no, row: row_no)).substring(3,5));
-      if(cur_hour>exit_hour)
+      if(now.isAfter(exit_time_))
       {
         _trafficSheet!.values.insertValueByKeys("0", columnKey: "Valid", rowKey: row_no);
         return true;
       }
-      else if(cur_hour==exit_hour&&cur_min>exit_min)
-      {
-        _trafficSheet!.values.insertValueByKeys("0", columnKey: "Valid", rowKey: row_no);
-        return true;
-      }
+      
       else
       {
         return false;

@@ -2,32 +2,52 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:cron/cron.dart';
+// import 'package:audioplayers/audio_cache.dart';
+// import 'package:audioplayers/audioplayers.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
 // import 'package:qrcode_scanner/api/sheets/googlesheetAPI.dart';
 import 'package:qrcode_scanner/api/sheets/googlesheetAPI.dart';
 import 'package:qrcode_scanner/models/qr.dart';
 import 'package:qrcode_scanner/models/trafficGS.dart';
-int counter =1;
-int people_no=1;
+
+int counter =0;
+int people_no=0;
 bool isvalid=true;
 int row_no=0;
 int col_no=2;
+List <Map> database=[];
+List <Map> qrBase=[]; 
+
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // counter=1;
   await googleSheetsAPI.init();
   var cron= new Cron();
   cron.schedule(new Schedule.parse('*/1 * * * *'), () async {
-    for(int i=2;i<=counter+1;i++)
+   print("Cron func is running succesfully "+people_no.toString()); 
+  //  print(people_no);
+    for(int i=0;i<counter;i++)
     {
-      dynamic currentTime = DateFormat.jm().format(DateTime.now());
-      DateTime now = DateTime.now();
-      if(await googleSheetsAPI.isNotValid(now,i,3))
+      // dynamic currentTime = DateFormat.jm().format(DateTime.now());
+      // DateTime now = DateTime.now();
+      // bool t=await googleSheetsAPI.isNotValid(now,i,3);
+      if(database[i]["Valid"]==1)
+      {
+        if(DateTime.now().isAfter(database[i]["ExitTime"]))
       {
         people_no--;
+        database[i]["Valid"]=0;
+        
       }
 
+      }
+      googleSheetsAPI.updateCell(id: 1, key: "Count", value: people_no);
+      
+      
+      // googleSheetsAPI.updateCell(id: 2, key: "Count", value: people_no);
     }
+    print(database);
+    
   });
   runApp(const MyApp());
 
@@ -38,7 +58,7 @@ createAlertDialogue(BuildContext context)
   return showDialog(context: context, builder: (context)
   {
     return AlertDialog(
-      title: Text("Invalid User"),
+      title: Text("Invalid User",style: TextStyle(color:Colors.red),),
       content: Text("This QR Code is already scanned, avoid scanning same QR multiple times."),
     );
   });
@@ -50,52 +70,70 @@ Future _scanQR(BuildContext context) async
     {
       var qrResult=await BarcodeScanner.scan();
      
-      final qrCode={
-        sheetfeilds.srNo:counter,
-        sheetfeilds.qrResult:qrResult.rawContent.toString()
-      };
+      
       
       // print(qrResult.rawContent.toString());
-      
-      for(int i=2;i<=counter+1;i++)
+      int ct=0;
+      for(int i=0;i<counter;i++)
       {
-        bool temp=await googleSheetsAPI.isEqual(qrResult.rawContent.toString(),i,2);
-        if(temp)
+        // bool temp=await googleSheetsAPI.isEqual(qrResult.rawContent.toString(),i,2);
+        if(qrResult.rawContent==qrBase[i]["QrCode"])
         {
-          isvalid=false;
+           isvalid=false;
+          // print(i);
+          ct++;
           break;
         }
+       
+        
       }
-
+      if(ct==0)
+      {
+        isvalid=true;
+      }
       if(isvalid)
       {
         dynamic currentTime = DateFormat.jm().format(DateTime.now());
         DateTime now = DateTime.now();
 
-        var exittime=now.add(const Duration(days:0,hours: 0,minutes: 30,seconds: 0));
-        String exhour=exittime.hour.toString();
-        if(int.parse(exhour)<10)
-        {
-          exhour=exhour+"0";
-        }
-        final trafficMess=
-      {
-        trafficfiedls.jaiswalOld:counter.toString(),
-        trafficfiedls.entryTime:(now.hour.toString()+":"+now.minute.toString()+":"+now.second.toString()),
-        trafficfiedls.exitTime:(exhour.toString()+":"+exittime.minute.toString()+":"+exittime.second.toString()),
-        trafficfiedls.valid:"1"
-      };
+        var exittime=now.add(const Duration(days:0,hours: 0,minutes: 3,seconds: 0));
         
-        await googleSheetsAPI.insert([qrCode]);
-        await googleSheetsAPI.insertTraffic([trafficMess]);
+       
+        
         counter++;
         people_no++;
+        final mapForDB=
+        {
+          "No":counter,
+          "EntryTime":now,
+          "ExitTime":exittime,
+          "Valid":1
+        };
+        database.add(mapForDB);
+        final mapforQR=
+        {
+          "No":counter,
+          "QrCode":qrResult.rawContent,
+        };
+        qrBase.add(mapforQR);
+        // AudioCache player = new AudioCache();
+        // const alarmAudioPath = "mixkit-quick-win-video-game-notification-269.wav";
+        // player.play(alarmAudioPath);
+       
+        // await googleSheetsAPI.insert([qrCode]);
+        print(database);
+        // await googleSheetsAPI.insertTraffic([trafficMess]);
+        
         
         
       }
       else
       {
         // print("This QR Code is already scanned");
+        // SystemSound.play(SystemSoundType.click);
+        // AudioCache player = new AudioCache();
+        // const alarmAudioPath = "fail-buzzer-04.wav";
+        // player.play(alarmAudioPath);
         createAlertDialogue(context);
       }
       
